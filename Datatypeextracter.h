@@ -1,3 +1,12 @@
+#include "\syzygy\refinery\process_state\process_state_util.h"
+#include "\syzygy\refinery\process_state\process_state_util.cc"
+#include "\syzygy\refinery\process_state\process_state.cc"
+#include "\syzygy\refinery\process_state\process_state.h"
+#include "\syzygy\refinery\types\type.h"
+#include "\syzygy\refinery\types\type.cc"
+#include "\syzygy\refinery\types\type_repository.h"
+#include "\syzygy\refinery\types\type_repository.cc"
+
 void DataTypeExtracter()
 {
 TypeRepository type_object;
