@@ -8,6 +8,7 @@ TypePtr  type_pointer = type_object.GetType(&type_id_typerepo); // @p type_point
 
 if (*type_pointer=USER_DEFINED_TYPE_KIND)
 {
-
+Field field_object;
+FieldKind 
 }
 };
