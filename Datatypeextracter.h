@@ -15,9 +15,15 @@ TypePtr  type_pointer = type_object.GetType(&type_id_typerepo); // @p type_point
 
 //here is the place which need to be figure out how to down cast the type we get. 
 
-if (*type_pointer=USER_DEFINED_TYPE_KIND)
+if (*type_pointer==USER_DEFINED_TYPE_KIND)
 {
-Field field_object;
-FieldKind 
+	Field field_object;
+	FieldKind fieldkind_object;
+	fieldkind_object = field_object.kind();
+	if ( fieldkind_object == BASE_CLASS_KIND)
+	{
+		
+	}
+
 }
 };
