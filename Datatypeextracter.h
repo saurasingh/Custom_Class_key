@@ -13,11 +13,25 @@ TypeRepository type_object;
 TypeId type_id_typerepo = data().type_id();  // neded to figure out if this is a right way to get typeid from the Typed block layer
 TypePtr  type_pointer = type_object.GetType(CastTo(&type_id_typerepo)); // @p type_pointer a TypePtr pointer to point to Type class & here is the place which need to be figure out how to down cast the type we get. 
 
-if (*type_pointer==USER_DEFINED_TYPE_KIND)
+
+if (*type_pointer == BASIC_TYPE_KIND)
 {
+	BasicType basictype_object;
+	string16 type_name =basictype_object.Namedtype.GetName();
+	size_t basictype_size = basictype_object,Namedtype.size;
+    //add graph code here to add basic type	
+	
+	
+}
+else if (*type_pointer==USER_DEFINED_TYPE_KIND)
+{   
+
+      
 	Field field_object;
 	FieldKind fieldkind_object;
 	fieldkind_object = field_object.kind();
+    //create graph object here for the user defined type 
+	
 	if ( fieldkind_object == BASE_CLASS_KIND)
 	{
 			BaseClassField baseclass_object;
@@ -46,6 +60,11 @@ if (*type_pointer==USER_DEFINED_TYPE_KIND)
 			//need to add code for the graph here			
 				
 	}
+	      //code flow need to be discussed with prof for the "Function". 
+	Function function_object;
+	TypeId function_typeid = function_object.type_id();
+	
+	
 	
 }
 };
