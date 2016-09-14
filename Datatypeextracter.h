@@ -15,7 +15,7 @@ TypePtr  type_pointer = type_object.GetType(CastTo(&type_id_typerepo)); // @p ty
 
 
 if (*type_pointer == BASIC_TYPE_KIND)
-{
+{   
 	BasicType basictype_object;
 	string16 type_name =basictype_object.Namedtype.GetName();
 	size_t basictype_size = basictype_object,Namedtype.size;
@@ -27,6 +27,7 @@ else if (*type_pointer==USER_DEFINED_TYPE_KIND)
 {   
 
       
+	Field field_object;
 	Field field_object;
 	FieldKind fieldkind_object;
 	fieldkind_object = field_object.kind();
@@ -65,6 +66,22 @@ else if (*type_pointer==USER_DEFINED_TYPE_KIND)
 	TypeId function_typeid = function_object.type_id();
 	
 	
+}
+else if(*type_pointer == POINTER_TYPE_KIND)
+{   
+    // create object to access graph for pointer type.	
+	PointerType pointertype_object;
+	Mode pointer_mode; 
+	TypeId contenttypeid;
+	TypePtr  contenttype;
+	pointer_mode = pointertype_object.ptr_mode();
+	contenttypeid = pointertype_object.content_type_id();
+	contenttype = pointertype_object.GetContentType(CastTo(&contenttypeid)); // describe the type of content pointer is pointing. 
+	size_t pointer_size = pointertype_object.Type.size();
+	
+	// now need to figure out how we are going to get range for the address to check if the pointer is overlapping or not.... 
+	
 	
 }
+
 };
