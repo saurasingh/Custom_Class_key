@@ -1,0 +1,248 @@
+#ifndef _GRAPH_H_
+#define _GRAPH_H_
+
+#include <map>
+#include <vector>
+#include <iostream>
+#include <list>
+
+template <typename T>
+class Vertex {
+public:
+      Vertex(){};
+      Vertex(T inVertex): m_vertex(inVertex), m_visited(false){}
+      ~Vertex(){}
+      bool operator<(const Vertex<T>& right) const { return m_vertex < right.m_vertex;}
+
+      T getVertex  () { return m_vertex;}
+      T getVisited () { return m_visited;}
+      T getParent  () { return m_vertexParentVisited;}
+      void setVisited(bool inVisited)  { m_visited = inVisited;}
+      void setParent(T inParentVertex) { m_vertexParentVisited = inParentVertex;}
+
+private:
+      T m_vertex;
+      T m_vertexParentVisited;
+      bool m_visited;
+};
+
+template <typename T>
+class Edge
+{
+public:
+    enum EDGE_TYPE
+    {
+        TREE_EDGE,
+        PARENT_EDGE,
+        BACK_EDGE,
+        DOWN_EDGE
+    };
+    Edge(Vertex<T>* inSrc, Vertex<T>* inDst)
+    {
+        m_SourceVertex = inSrc;
+        m_DestVertex   = inDst;
+    }
+    void SetEdgeType( EDGE_TYPE t)
+    {
+        m_EdgeType = t;
+    }
+private:
+    Vertex<T>* m_SourceVertex;
+    Vertex<T>* m_DestVertex;
+    EDGE_TYPE  m_EdgeType;
+protected:
+};
+
+template <typename T>
+class Graph
+{
+public:
+      typedef Vertex<T>                             GraphVertex;
+      // Adjancency List Datastructure and Iterator declaration.
+      // Use STL List here
+      typedef std::list<GraphVertex*>               AdjList;
+      typedef typename AdjList::iterator            AdjListIterator;
+      // Graph Data structure declaration and Iterator declaration
+      // Graph is map of GraphVertex* and List of adjacency list.
+      typedef std::map<GraphVertex*, AdjList>       GraphMap;
+      typedef typename GraphMap::iterator           GraphIterator;
+      // Graph Memory pool is map where actual memory allocation 
+      // will happen.
+      // Make sure you have some way to identify each vertex.
+      // Map key is the identification method of the vertex.
+      // Map value is the pointer to actual object.
+      typedef std::map<T,GraphVertex*>              GraphMemoryPool;
+      typedef typename GraphMemoryPool::iterator    GraphInMemoryIterator;
+      // Edge Class Declaration.
+      typedef std::vector<Edge<T> >                 GraphEdge;
+
+private:          
+      bool               m_isDirected;
+      GraphMap           m_graph;
+      GraphMemoryPool    m_graphMemoryPool;
+      std::vector<T>     m_SearchOrderVector;
+      GraphEdge          m_GraphEdge;
+public:
+      Graph(bool inIsDirected):m_isDirected(inIsDirected) {}
+      ~Graph()
+      {
+            for ( GraphInMemoryIterator itr = m_graphMemoryPool.begin(); itr != m_graphMemoryPool.end(); ++itr)
+            {
+                  if ( itr->second) delete itr->second;
+            }
+            m_graphMemoryPool.clear();
+            m_graph.clear();
+      }
+      void insert(T inSRC, T inDST) 
+      {
+            if ( m_isDirected) 
+            {
+                  __insert(inSRC,inDST);
+            }
+            else 
+            {
+                  __insert(inSRC,inDST);
+                  __insert(inDST,inSRC);
+            }
+      }
+      void printGraph()
+      {
+            for ( GraphIterator itr = m_graph.begin(); itr != m_graph.end(); ++itr) 
+            {
+                  std::cout << static_cast<GraphVertex*>(itr->first)->getVertex() << " : ";
+                  AdjList tmp = static_cast<AdjList>(itr->second);
+                  for ( AdjListIterator itr1 = tmp.begin(); itr1 != tmp.end(); ++itr1) 
+                  {
+                        std::cout << (*itr1)->getVertex() << " ";
+                  }
+                  std::cout << std::endl;
+            }
+      }
+      void printSearchOrder()
+      {
+            std::vector<T> tmp = getSearchOrderVector();
+            for ( vector<T>::iterator itr = tmp.begin(); itr != tmp.end(); ++itr)
+            {
+                std::cout << *itr << " ";
+            }
+            std::cout << std::endl;
+
+      }
+      void printParentLinkMap()
+      {
+          std::vector<T> tmp = getSearchOrderVector();
+          for ( vector<T>::iterator itr = tmp.begin(); itr != tmp.end(); ++itr)
+          {
+                GraphVertex *tmp = __VertexInstance(*itr);
+                std::cout << "[" << tmp->getParent() << "]  Parent Of [" << tmp->getVertex() << "]" << std::endl;
+          }
+      }
+      void DFS()
+      {
+            for ( GraphInMemoryIterator itr = m_graphMemoryPool.begin(); itr != m_graphMemoryPool.end(); ++itr)
+            {
+                  (*itr).second->setVisited(false);
+            }
+            m_SearchOrderVector.clear();
+            // This loop handles the case when the grpah is not
+            // Connected.
+            for ( GraphIterator itr = m_graph.begin(); itr != m_graph.end(); ++itr) 
+            {
+                GraphVertex *currentVertex = static_cast<GraphVertex*>(itr->first);
+                if ( currentVertex->getVisited() == false) 
+                {
+                    T curVertex = currentVertex->getVertex();
+                    // Insert new element in Search Order Vector.
+                    m_SearchOrderVector.push_back(curVertex);
+                    // Set the parent of this root node in the DFS search tree
+                    currentVertex->setParent(curVertex);
+                    // Create Edge with itself here.
+                    __setTypeAndInsertNewEdge( curVertex, 
+                                               curVertex,
+                                               Edge<T>::TREE_EDGE);
+                    // Mark the vertex as visited.
+                    currentVertex->setVisited(true);
+                    __rundfs(itr);
+                }
+            }
+      }
+    std::vector<T> getSearchOrderVector() { return m_SearchOrderVector;}
+    int getNumberOfVertex(){ return (int)m_graph.size();}
+private:
+    void __setTypeAndInsertNewEdge( T inSRC, T inDST, typename Edge<T>::EDGE_TYPE t )
+    {
+        Edge<T> tmp(__VertexInstance(inSRC), 
+                    __VertexInstance(inDST));
+        tmp.SetEdgeType(t);
+        m_GraphEdge.push_back(tmp);
+    }
+    // Recursive DFS function.
+    // Apart from visiting vertices 
+    // this implementatioin will be doing following.
+    // 1. Maintain the order in which vertices are visited.   
+    // 2. Update Parent link map
+    // 3. Create Edge and update the type of the edge.
+    void __rundfs( typename GraphMap::iterator &itr) 
+    {
+        for (AdjListIterator itr1 = itr->second.begin(); itr1 != itr->second.end(); ++itr1) 
+        {
+            GraphVertex *childVertex = (*itr1);
+            GraphVertex *parentVertex = itr->first;
+            if ( childVertex->getVisited() == false) 
+            {
+                m_SearchOrderVector.push_back(childVertex->getVertex()); // Update the search order Vector.
+                childVertex->setParent(parentVertex->getVertex());         // Update the parent-link map.
+                childVertex->setVisited(true);                           // Mark the vertex as visited.
+                __setTypeAndInsertNewEdge(parentVertex->getVertex(),
+                                          childVertex->getVertex(),
+                                          Edge<T>::TREE_EDGE); // setup the edge type 
+                __rundfs(m_graph.find(
+                        __VertexInstance(childVertex->getVertex())));
+            }     
+            else
+            {
+                if ( childVertex->getVertex() == parentVertex->getVertex())
+                {
+                }
+            }
+        }
+    }
+    void __insert(T inSRC, T inDST) 
+    {
+        GraphIterator itr = m_graph.find(__VertexInstance(inSRC));
+        if ( itr != m_graph.end()) 
+        {
+            // Update the Adjancency list 
+            itr->second.push_back(__VertexInstance(inDST));
+        }
+        else 
+        {
+            // Create new Adjancy list
+            m_graph.insert(std::make_pair(__VertexInstance(inSRC),AdjList() ));
+            GraphIterator itr = m_graph.find(__VertexInstance(inSRC));
+            // Update the Adjacency List // 
+            itr->second.push_back(__VertexInstance(inDST));
+        }
+    }
+    // Searches if the Vertex is already allocated in the pool map
+    // If ye return the pointer from the map.
+    // Else Create new Vertex instance
+    // Insert into the memory pool map
+    // Return the pointer.
+    GraphVertex *__VertexInstance(T inVertex) 
+    {
+        GraphVertex *newVertex    = (GraphVertex *)0;
+        GraphInMemoryIterator itr = m_graphMemoryPool.find(inVertex);
+        if ( itr == m_graphMemoryPool.end()) 
+        {
+            newVertex = new GraphVertex(inVertex);
+            m_graphMemoryPool.insert(std::make_pair(inVertex,newVertex));
+        }
+        else 
+        {
+            newVertex = ( GraphVertex *)itr->second;
+        }           
+        return newVertex;
+    }
+};
+#endif
