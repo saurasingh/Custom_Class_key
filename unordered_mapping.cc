@@ -1,48 +1,63 @@
+namespace refinery {
+
 struct Vertex
 {
-	Adress Adress;
+	Address address;
 	size_t size;
-	Type DataType;
-	
+	Type dataType;
+	//also include address range
 }
 
-struct Key
+struct Equal_Key
 {
-  Address Address;
+  Address address;
   size_t size;
+  Type dataType;
 
-  bool operator==(const Key &other) const
-  { return (Address  == other.Address 
-            && size == other.size);
+  bool operator==(const Equal_Key &other) const
+  { return (address  == other.address 
+            && size == other.size
+			&& dataType == other.dataType);
   }
 };
 
 
 
 template <> 
-	struct hash<Key>
+	struct hash<Equal_Key>
     {
-        size_t operator()( const Key& k ) const
-        {
+        size_t operator()( const Equal_Key& k ) const
+        { 
             // Compute individual hash values for Address_starting, Address_ending and size 
             // http://stackoverflow.com/a/1646913/126995
             size_t res = 1009;
-            res = res * 9176 + hash<Address>()( k.Address );
+            res = res * 9176 + hash<Address>()( k.address );
             res = res * 9176 + hash<size_t>()( k.size );
+			res = res * 9176 + hash<Type>()(k.dataType);
             return res;
         }
     };
 
-Vertex *FindorCreatevertex(Adress, Type,hash,Key)
+	typedef std::unordered_map<Equal_Key,std::string> new_vertex;
+	
+Vertex FindorCreatevertex(Adress,size_t,Type)
 {
-    	unordered_map<Address, Type, hash, > vertex_map;
-		if (vertex_map.find(Key)==vertex_map.end())
+	new_vertex vertex_object;
+    	
+		std::string vertex_value = vertex_object[{address,size,dataType}];
+		
+		if (vertex_value.empty())
 		{
-			vertex_map.insert(make_pair(Key,Type);
+			//cout<< "Vertex with such hypothesis is not present"
+			vertex_object.insert(new_vertex::value_type({address,size,dataType}, "Vertex present"));
+			
 		}
 		else
 		{
-			return vertex_map.find(Key);
+			Vertex.address = vertex_object.first.address;
+			Vertex.size    = vertex_object.first.size;
+			Vertex.dataType= vertex_object.first.dataType;
 		}
 	
 	}
+}
